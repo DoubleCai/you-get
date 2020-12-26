@@ -157,7 +157,14 @@ class YouTube(VideoExtractor):
             log.wtf('[Failed] Unsupported URL pattern.')
 
         video_page = get_content('https://www.youtube.com/playlist?list=%s' % playlist_id)
-        ytInitialData = json.loads(match1(video_page, r'window\["ytInitialData"\]\s*=\s*(.+);'))
+        matched = match1(video_page, r'window\["ytInitialData"\]\s*=\s*(.+);')
+
+        if matched is None:
+            # try another pattern
+            matched = match1(video_page, r'var\s*ytInitialData\s*=\s*(.+);')
+            matched = matched.split(";")[0]
+
+        ytInitialData = json.loads(matched)
 
         tab0 = ytInitialData['contents']['twoColumnBrowseResultsRenderer']['tabs'][0]
         itemSection0 = tab0['tabRenderer']['content']['sectionListRenderer']['contents'][0]
